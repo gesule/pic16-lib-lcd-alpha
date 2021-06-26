@@ -11,6 +11,7 @@ La asignación exacta puede variar pero está sujeta a las siguientes restriccio
 donde: 0 <= i <= 3
 
 RS y E pueden conectarse libremente a cualquiera de los puertos restantes del mismo registro.
+La línea R/W debe conectarse a Vss.
 
 ## Dependencias:
 
