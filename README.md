@@ -34,7 +34,7 @@ Por tanto no se rquiere de ninguna función para declarar el interfaz físico en
          lcd_init(D4, D3, D2, D1, RS, E);
 
 En lugar de eso, se define el interfaz en tiempo de compilación, de ahí la necesidad de mantener el código a la vista. 
-En cualquier caso esta configuración, se ha centralizado en este archivo *lcd.h*, y no es necesario tocar nada en el archivo *lcd.c*.
+En cualquier caso esta configuración, se ha centralizado en el archivo *lcd.h*, y no es necesario tocar nada en el archivo *lcd.c*.
 
 Este planteamiento permite algunos ahorros en memoria de programa y datos, además mejora el rendimiento en ejecución.
  
