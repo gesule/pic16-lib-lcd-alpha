@@ -1,5 +1,5 @@
 # pic16-lib-lcd-alpha
-### Contolador para displays LCD alphanuméricos basados en el chip HITACHI 44780, para MCUs PIC16F1xxx
+### Contolador para displays LCD alfanuméricos basados en el chip HITACHI 44780, para MCUs PIC16F1xxx
 
 ## Especificaciones:
 Solamente requiere de 6 puertos de salida conectados a las líneas:  D4, D5, D6, D7, RS, E. Los 6 puertos deben pertencer al mismo registro SFR.
