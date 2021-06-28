@@ -23,41 +23,36 @@ Se espera que esta función se haya definido en alguna parte del proyecto o se i
 
     USE_EXTERN_FUNCTION_wait_us
 
-La ausencia de esta definición activará una sección de código que proporcionará una función de sustitución compatible.
+La ausencia de esta definición, activará una sección de código que proporcionará una función de sustitución compatible.
 
 ## Ajustes de Integración y uso:
 
-Esta no es una biblioteca orientada a su distribución precompilada. Puesto que su nicho objetivo es el de los MCU de escasos recursos se ha preferido plantear como repositorio de código para ser copiado en cada proyecto que lo requiera.
+Para relacionar el código con la configuración de pines, edite la sección prevista a tal efecto en el archivo *lcd.h*.
 
-Por tanto no se rquiere de ninguna función para declarar el interfaz físico en tiempo de ejecución. Es decir, no existe algo como:
+    /*__ Ajustes de aplicación: __________________________________________________*/
+    
+    #define USE_EXTERN_FUNCTION_wait_us
 
-         lcd_init(D4, D3, D2, D1, RS, E);
-
-En lugar de eso, se define el interfaz en tiempo de compilación, de ahí la necesidad de mantener el código a la vista. 
-En cualquier caso esta configuración, se ha centralizado en el archivo *lcd.h*, y no es necesario tocar nada en el archivo *lcd.c*.
-
-Este planteamiento permite algunos ahorros en memoria de programa y datos, además mejora el rendimiento en ejecución.
- 
-En esencia los ajustes consisten en:
-
-Se define el tipo *lcd_bus_t* como un campo de bits que representa la conexión del LCD a los puertos de salida del MCU, por ejemlo:
+    #ifndef USE_EXTERN_FUNCTION_wait_us
+    #define _XTAL_FREQ 32000000
+    #endif
 
     typedef struct {
-      unsigned dbus   : 4;        // PORT[0:3] --> LCD_D[4:7]
-      unsigned rs     : 1;        // PORT[4] --> LCD_RS
-      unsigned en     : 1;        // PORT[5] --> LCD_E
-    }lcd_bus_t;     
+        unsigned dbus   : 4;        // PORT[0:3] --> LCD_D[4:7]
+        unsigned rs     : 1;        // PORT[4] --> LCD_RS
+        unsigned en     : 1;        // PORT[5] --> LCD_E
+                                // GND --> LCD_RW
+    }lcd_bus_t;         
 
-*Por supuesto, la definición debe encajar en un tipo char, no puede sumar mas de 8 bits.*
+    volatile lcd_bus_t  lcd             __at(0x0D);     // PORTB
+    volatile uint8_t    lcd_tris_port   __at(0x8D);     // TRISB
+    volatile uint8_t    lcd_ansel_port  __at(0x18D);    // ANSELB
 
-Se declaran sendas variables con direccionamiento absoluto para que hagan referencia a los correspondientes registros SFR. Por ejemplo en un PIC16F1713 podrían ser los siguientes:
+    /*_____________________________________________Fin de ajustes de aplicación __*/
 
-    volatile lcd_bus_t  lcd             __at(0x0D);     // Referencia a PORTB
-    volatile uint8_t    lcd_tris_port   __at(0x8D);     // Referencia a TRISB
-    volatile uint8_t    lcd_ansel_port  __at(0x18D);    // Referencia a ANSELB
     
-    
-Observa que la referencia lcd, se declara de tipo lcd_bus_t esto permite acceder a las lineas del LCD mediante una simple asignación:
+He preferido este enfoque porque es económico, observa que no produce código, solo define un tipo de datos y crea tres referencias a posiciones del SFR.
+Además simplifica el código posterior, permite manipular las líneas del LCD directamente, no requiere de la mediación de ninguna función.
 
     lcd.rs = 0;
     ...
@@ -65,6 +60,6 @@ Observa que la referencia lcd, se declara de tipo lcd_bus_t esto permite acceder
     lcd.dbus = cmd >> 4;    
     ...
     lcd.en = 0;
-
-En definitiva, estamos utilizando los registros del SFR bajo un alias significativo respecto ala aplicación evitando el abuso de macros. *¿No es precioso?*
+    
+El coste de esta decisión es que, para integrar esta biblioteca en un proyecto debe copiar los archivos lcd.h y lcd.c y compilarlos junto al resto de su programa, no podrá almacenarlo ni distribuirlo en formato binario. Sin embargo este es un coste muy razonable puesto que el nicho objetivo de esta biblioteca es el de los MCUs de pocos recursos, donde cada byte cuenta.
 
